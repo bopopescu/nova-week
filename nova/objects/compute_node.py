@@ -17,7 +17,7 @@ from nova import exception
 from nova.objects import base
 from nova.objects import fields
 from nova.openstack.common import jsonutils
-
+from nova.objects import geo_tags
 
 class ComputeNode(base.NovaPersistentObject, base.NovaObject):
     # Version 1.0: Initial version
@@ -45,7 +45,8 @@ class ComputeNode(base.NovaPersistentObject, base.NovaObject):
         'cpu_info': fields.StringField(nullable=True),
         'disk_available_least': fields.IntegerField(nullable=True),
         'metrics': fields.StringField(nullable=True),
-        'stats': fields.DictOfNullableStringsField(nullable=True),
+        'stats': fields.DictOfNullableStringsField(nullable=True)
+#        'geo_tags': fields.DictOfStringsField(),
         }
 
     def obj_make_compatible(self, primitive, target_version):
@@ -54,10 +55,11 @@ class ComputeNode(base.NovaPersistentObject, base.NovaObject):
         if target_version < (1, 3) and 'stats' in primitive:
             # pre 1.3 version does not have a stats field
             del primitive['stats']
+        #TODO: update target version
+        
 
     @staticmethod
     def _from_db_object(context, compute, db_compute):
-
         fields = set(compute.fields) - set(['stats'])
         for key in fields:
             compute[key] = db_compute[key]
@@ -65,7 +67,10 @@ class ComputeNode(base.NovaPersistentObject, base.NovaObject):
         stats = db_compute['stats']
         if stats:
             compute['stats'] = jsonutils.loads(stats)
-
+        
+        #compute['geo_tags'] = geo_tags.GeoTag.get_by_node_name(context, db_compute['hypervisor_hostname'])
+        
+                                                
         compute._context = context
         compute.obj_reset_changes()
         return compute
@@ -121,6 +126,8 @@ class ComputeNode(base.NovaPersistentObject, base.NovaObject):
                                                              self.service_id)
         return self._cached_service
 
+    def obj_make_compatible(self, primitive, target_version):
+        pass
 
 class ComputeNodeList(base.ObjectListBase, base.NovaObject):
     # Version 1.0: Initial version

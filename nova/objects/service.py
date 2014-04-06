@@ -12,12 +12,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import six
+
 from nova import availability_zones
 from nova import db
 from nova import exception
 from nova.objects import base
 from nova.objects import compute_node
 from nova.objects import fields
+from nova.objects import geo_tags
 from nova.openstack.common.gettextutils import _
 from nova.openstack.common import log as logging
 
@@ -41,6 +44,8 @@ class Service(base.NovaPersistentObject, base.NovaObject):
         'disabled_reason': fields.StringField(nullable=True),
         'availability_zone': fields.StringField(nullable=True),
         'compute_node': fields.ObjectField('ComputeNode'),
+        'geo_tag': fields.ObjectField('GeoTag', nullable=True),
+        
         }
 
     @staticmethod
@@ -55,14 +60,29 @@ class Service(base.NovaPersistentObject, base.NovaObject):
         service.compute_node = compute_node.ComputeNode._from_db_object(
             context, compute_node.ComputeNode(), db_compute)
 
+    #(licostan) must be removed after poc, maybe place this into computenode hypervisors
+    #when migrated to objects
+    @staticmethod
+    def _do_geo_tag(context, service, db_service):
+        #if it's a compute-node only
+        if db_service['topic'] == six.text_type('compute'):
+            geo_tag = geo_tags.GeoTag.get_by_node_name(context, db_service['host'])
+            if geo_tag:
+                service.geo_tag = geo_tag
+        else:
+            return
+
     @staticmethod
     def _from_db_object(context, service, db_service):
         allow_missing = ('availability_zone',)
+        
         for key in service.fields:
             if key in allow_missing and key not in db_service:
                 continue
             if key == 'compute_node':
                 service._do_compute_node(context, service, db_service)
+            elif key == 'geo_tag':
+                service._do_geo_tag(context, service, db_service)
             else:
                 service[key] = db_service[key]
         service._context = context
@@ -78,13 +98,15 @@ class Service(base.NovaPersistentObject, base.NovaObject):
                    'name': self.obj_name(),
                    'id': self.id,
                    })
-        if attrname != 'compute_node':
+        if attrname != 'compute_node' and attrname != 'geo_tag':
             raise exception.ObjectActionError(
                 action='obj_load_attr',
                 reason='attribute %s not lazy-loadable' % attrname)
-        self.compute_node = compute_node.ComputeNode.get_by_service_id(
-            self._context, self.id)
-
+        if attrname == 'geo_tag':
+            self.geo_tag = geo_tags.GeoTag.get_by_node_name(self._context, self.host)
+        else:
+            self.compute_node = compute_node.ComputeNode.get_by_service_id(
+                self._context, self.id)
     @base.remotable_classmethod
     def get_by_id(cls, context, service_id):
         db_service = db.service_get(context, service_id)

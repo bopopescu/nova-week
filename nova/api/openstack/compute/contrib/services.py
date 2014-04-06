@@ -95,6 +95,14 @@ class ServiceController(object):
         if binary:
             services = [s for s in services if s['binary'] == binary]
 
+        #fetch geo_tags to avoid lazy query on each compute-host
+        geo_tags = self.host_api.geo_tags_get_all(context, None)
+        for x in services:
+            if x['binary'] == 'nova-compute':
+                tags = [gt for gt in geo_tags
+                        if gt['server_name'] == x['host']]
+                if len(tags):
+                    x.geo_tag = tags[0]
         return services
 
     def _get_service_detail(self, svc, detailed):
@@ -111,12 +119,15 @@ class ServiceController(object):
             service_detail['id'] = svc['id']
         if detailed:
             service_detail['disabled_reason'] = svc['disabled_reason']
-
+        if svc['binary'] == 'nova-compute':
+            #check this is not doing lazy again...
+            service_detail['geo_tag'] = svc['geo_tag']
         return service_detail
 
     def _get_services_list(self, req, detailed):
         services = self._get_services(req)
         svcs = []
+
         for svc in services:
             svcs.append(self._get_service_detail(svc, detailed))
 

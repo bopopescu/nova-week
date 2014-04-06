@@ -53,6 +53,7 @@ from nova.objects import aggregate as aggregate_obj
 from nova.objects import base as obj_base
 from nova.objects import block_device as block_device_obj
 from nova.objects import flavor as flavor_obj
+from nova.objects import geo_tags as geo_tags_obj
 from nova.objects import instance as instance_obj
 from nova.objects import instance_action
 from nova.objects import instance_group as instance_group_obj
@@ -3252,6 +3253,57 @@ class HostAPI(base.Base):
     def compute_node_statistics(self, context):
         return self.db.compute_node_statistics(context)
 
+    def geo_tags_get_all(self, context, filters):
+        """Returns a list of GeoTags"""
+
+        if filters is None:
+            filters = {}
+
+        gtags = geo_tags_obj.GeoTagList.get_all(context, filters)
+        return gtags
+
+    def geo_tags_create(self, context, compute_name, valid_invalid,
+                        longitude, latitude):
+        """Returns a list of GeoTags"""
+        self._assert_host_exists(context, compute_name)
+
+        geo_tags = geo_tags_obj.GeoTag()
+        geo_tags.valid_invalid = valid_invalid
+        geo_tags.plt_longitude = longitude
+        geo_tags.plt_latitude = latitude
+        geo_tags.server_name = compute_name
+        geo_tags.create(context)
+        return geo_tags
+
+    def geo_tags_update(self, context, geo_tag_id,
+                        valid_invalid, longitude, latitude):
+        """Returns a list of GeoTags"""
+        #(licostan): create a get_by_node_name_or_id ()... to replace both
+        #lines
+        geo_tag = geo_tags_obj.GeoTag.get_by_node_name(context, geo_tag_id)
+        if not geo_tag:
+            geo_tag = geo_tags_obj.GeoTag.get_by_id(context, geo_tag_id)
+        
+        if not geo_tag:
+            raise exception.NotFound()
+        
+        geo_tag.valid_invalid = valid_invalid
+        geo_tag.plt_longitude = longitude
+        geo_tag.plt_latitude = latitude
+        geo_tag.save()
+        return geo_tag
+
+    def geo_tags_delete(self, context, geo_tag_id):
+        """Delete GeoTags"""
+        geo_tag = geo_tags_obj.GeoTag.get_by_id_or_node_name(context, geo_tag_id)
+        if not geo_tag:
+            raise exception.NotFound()
+        
+        geo_tag.destroy()
+    
+    def geo_tags_get_by_id_or_name(self, context, geo_tag_id):
+        return geo_tags_obj.GeoTag.get_by_id_or_node_name(context, geo_tag_id)
+    
 
 class InstanceActionAPI(base.Base):
     """Sub-set of the Compute Manager API for managing instance actions."""

@@ -6076,3 +6076,71 @@ def pci_device_update(context, node_id, address, values):
         device.update(values)
         session.add(device)
     return device
+
+
+#############################################
+
+def geo_tag_get_by_node_name(context, node_name):
+    return model_query(context, models.ComputeNodeGeoTag).\
+                       filter_by(server_name=node_name).\
+                       first()
+
+
+def geo_tag_get_by_id(context, gt_id):
+    return model_query(context, models.ComputeNodeGeoTag).\
+                       filter_by(id=gt_id).\
+                       first()
+
+
+#(licostan) setup filter later.
+def geo_tag_get_all(context, filters):
+    query = model_query(context, models.ComputeNodeGeoTag)
+    if filters and 'host' in filters:
+        query = query.filter_by(server_name=filters['host'])
+
+    return query.all()
+
+
+@require_admin_context
+def geo_tag_create(context, values):
+    session = get_session()
+    geo_tag = geo_tag_get_by_node_name(context, values['server_name'])
+    if not geo_tag:
+        geo_tag = models.ComputeNodeGeoTag()
+        geo_tag.update(values)
+        geo_tag.save(session=session)
+    else:
+        raise exception.GeoTagExists(name=values['server_name'])
+
+    return geo_tag
+
+
+@require_admin_context
+def geo_tag_update(context, geo_tag_id, values):
+    session = get_session()
+    #(licostan) : add id or hostname logic to find here
+    geo_tag = geo_tag_get_by_id(context, geo_tag_id)
+    if geo_tag:
+        geo_tag.update(values)
+        geo_tag.save(session=session)
+    else:
+        raise exception.NotExists()
+
+    return geo_tag
+
+
+@require_admin_context
+def geo_tag_destroy(context, geo_tag_id):
+    model_query(context, models.ComputeNodeGeoTag).\
+                filter_by(id=geo_tag_id).delete()
+
+
+@require_admin_context
+def geo_tag_get_by_id_or_node_name(context, geo_tag_id):
+    """Get GeoTag."""
+    #(licostan): this will generate truncate warning since
+    #one value is double the other str.
+    return model_query(context, models.ComputeNodeGeoTag).\
+                filter((models.ComputeNodeGeoTag.id == geo_tag_id) |
+                       (models.ComputeNodeGeoTag.server_name == geo_tag_id)).\
+                first()
