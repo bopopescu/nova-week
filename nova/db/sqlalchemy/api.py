@@ -6144,3 +6144,16 @@ def geo_tag_get_by_id_or_node_name(context, geo_tag_id):
                 filter((models.ComputeNodeGeoTag.id == geo_tag_id) |
                        (models.ComputeNodeGeoTag.server_name == geo_tag_id)).\
                 first()
+
+
+@require_admin_context
+def geo_tag_get_all_by_filters(context, filters):
+    query = model_query(context, models.ComputeNodeGeoTag)
+    if "valid_invalid" in filters:
+        query = query.filter(models.ComputeNodeGeoTag.valid_invalid ==
+                                filters['valid_invalid'])
+    if 'host' in filters:
+        query = query.filter(models.ComputeNodeGeoTag.server_name ==
+                                filters['host'])
+
+    return query.all()

@@ -118,3 +118,9 @@ class GeoTagList(base.ObjectListBase, base.NovaObject):
     def get_all(cls, context, filters=None):
         db_dev = db.geo_tag_get_all(context, filters)
         return base.obj_make_list(context, GeoTagList(), GeoTag, db_dev)
+    
+    @base.remotable_classmethod
+    def get_by_filters(cls, context, filters):
+        db_dev = db.geo_tags_get_all_by_filters(context, filters)
+        return base.obj_make_list(context, GeoTagsList(), GeoTag,
+                                  db_dev)
