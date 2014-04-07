@@ -85,7 +85,7 @@ class GeoTag(base.NovaPersistentObject, base.NovaObject):
                                               reason='already created')
         updates = self.obj_get_changes()
         updates.pop('id', None)
-
+        print "UPDAtEs: ", updates
         db_gtag = db.geo_tag_create(context, updates)
         self._from_db_object(context, self, db_gtag)
 
@@ -122,5 +122,5 @@ class GeoTagList(base.ObjectListBase, base.NovaObject):
     @base.remotable_classmethod
     def get_by_filters(cls, context, filters):
         db_dev = db.geo_tags_get_all_by_filters(context, filters)
-        return base.obj_make_list(context, GeoTagsList(), GeoTag,
+        return base.obj_make_list(context, GeoTagList(), GeoTag,
                                   db_dev)

@@ -3273,6 +3273,7 @@ class HostAPI(base.Base):
         geo_tags.plt_latitude = latitude
         geo_tags.server_name = compute_name
         geo_tags.create(context)
+        
         return geo_tags
 
     def geo_tags_update(self, context, geo_tag_id,

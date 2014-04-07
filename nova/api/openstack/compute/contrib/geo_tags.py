@@ -62,8 +62,8 @@ class GeoTagsController(object):
         except KeyError:
             raise exc.HTTPBadRequest()
 
-        longitude = geo_tag.get('longitude')
-        latitude = geo_tag.get('latitude')
+        longitude = geo_tag.get('plt_longitude')
+        latitude = geo_tag.get('plt_latitude')
         state = geo_tag.get('valid_invalid')
 
         try:
@@ -97,7 +97,7 @@ class GeoTagsController(object):
         """
         context = _get_context(req)
         authorize(context)
-        valid_keys = ['longitude', 'latitude', 'valid_invalid']
+        valid_keys = ['plt_longitude', 'plt_latitude', 'valid_invalid']
 
         if len(body) != 1:
             raise exc.HTTPBadRequest()
@@ -110,8 +110,8 @@ class GeoTagsController(object):
             raise exc.HTTPBadRequest()
         #(licostan): iteraate update_values and check valid_keys if not
         #throw error
-        longitude = update_values.get('longitude')
-        latitude = update_values.get('latitude')
+        longitude = update_values.get('plt_longitude')
+        latitude = update_values.get('plt_latitude')
         state = update_values.get('valid_invalid')
          #(licostan): remove compute_name and pass **update_values
          #to remove args
