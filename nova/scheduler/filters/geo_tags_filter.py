@@ -35,8 +35,6 @@ class GeoTagsFilter(filters.BaseHostFilter):
         #something like that..... ( host_state.geo_tag for instance),
         #instead of querying the db
         geo_tags = scheduler_hints.get('geo_tags', None)
-        if not geo_tags:
-            return True
 
         #filters = {'host': host_state.host, 'valid_invalid': 'Valid'}
         geo_tag = db.geo_tag_get_by_node_name(context, host_state.host)
@@ -44,10 +42,11 @@ class GeoTagsFilter(filters.BaseHostFilter):
             LOG.info('NO GEO TAG FOUND FOR %s' % host_state.host)
             return True
 
-        if geo_tag.valid_invalid == 'Valid':
+        if geo_tag.valid_invalid.lower() == 'valid':
+            #check geo_tags here if needed
             LOG.info('GEO TAG FOUND FOR %s' % host_state.host)
             return True
 
         LOG.info('GEO TAG INVALID FOR  %s' % host_state.host)
         #always true for now.
-        return True
+        return False
