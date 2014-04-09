@@ -34,7 +34,7 @@ fake_service = {
     'disabled_reason': None,
     }
 
-OPTIONAL = ['availability_zone', 'compute_node']
+OPTIONAL = ['availability_zone', 'compute_node', 'geo_tag']
 
 
 class _TestServiceObject(object):

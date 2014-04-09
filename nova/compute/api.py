@@ -3273,7 +3273,7 @@ class HostAPI(base.Base):
         geo_tags.plt_latitude = latitude
         geo_tags.server_name = compute_name
         geo_tags.create(context)
-        
+
         return geo_tags
 
     def geo_tags_update(self, context, geo_tag_id,
@@ -3284,10 +3284,10 @@ class HostAPI(base.Base):
         geo_tag = geo_tags_obj.GeoTag.get_by_node_name(context, geo_tag_id)
         if not geo_tag:
             geo_tag = geo_tags_obj.GeoTag.get_by_id(context, geo_tag_id)
-        
+
         if not geo_tag:
             raise exception.NotFound()
-        
+
         geo_tag.valid_invalid = valid_invalid
         geo_tag.plt_longitude = longitude
         geo_tag.plt_latitude = latitude

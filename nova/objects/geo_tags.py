@@ -48,8 +48,6 @@ class GeoTag(base.NovaPersistentObject, base.NovaObject):
 
     def __init__(self, *args, **kwargs):
         super(GeoTag, self).__init__(*args, **kwargs)
-        self.obj_reset_changes()
-        self.extra_info = {}
 
     @staticmethod
     def _from_db_object(context, geo_tag, db_dev):
@@ -85,7 +83,6 @@ class GeoTag(base.NovaPersistentObject, base.NovaObject):
                                               reason='already created')
         updates = self.obj_get_changes()
         updates.pop('id', None)
-        print "UPDAtEs: ", updates
         db_gtag = db.geo_tag_create(context, updates)
         self._from_db_object(context, self, db_gtag)
 
@@ -97,7 +94,7 @@ class GeoTag(base.NovaPersistentObject, base.NovaObject):
         """
         updates.pop('id', None)
         db_geo_tag = db.geo_tag_update(context, self.id, updates)
-        return self._from_db_object(context, self, db_geo_tag)
+        self._from_db_object(context, self, db_geo_tag)
 
     @base.remotable
     def destroy(self, context):
@@ -118,7 +115,7 @@ class GeoTagList(base.ObjectListBase, base.NovaObject):
     def get_all(cls, context, filters=None):
         db_dev = db.geo_tag_get_all(context, filters)
         return base.obj_make_list(context, GeoTagList(), GeoTag, db_dev)
-    
+
     @base.remotable_classmethod
     def get_by_filters(cls, context, filters):
         db_dev = db.geo_tags_get_all_by_filters(context, filters)

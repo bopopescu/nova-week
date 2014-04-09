@@ -37,12 +37,14 @@ class GeoTagsFilter(filters.BaseHostFilter):
         geo_tags = scheduler_hints.get('geo_tags', None)
 
         #filters = {'host': host_state.host, 'valid_invalid': 'Valid'}
+        #(licostan): Should we use objects? don't know... 
+        #anyways this call should not happen in production
         geo_tag = db.geo_tag_get_by_node_name(context, host_state.host)
         if not geo_tag:
             LOG.info('NO GEO TAG FOUND FOR %s' % host_state.host)
             return True
 
-        if geo_tag.valid_invalid.lower() == 'valid':
+        if geo_tag['valid_invalid'].lower() == 'valid':
             #check geo_tags here if needed
             LOG.info('GEO TAG FOUND FOR %s' % host_state.host)
             return True

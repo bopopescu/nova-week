@@ -18,6 +18,7 @@ Tests For Scheduler Host Filters.
 import httplib
 
 from oslo.config import cfg
+import mock
 import stubout
 
 from nova import context
@@ -1830,3 +1831,29 @@ class HostFiltersTestCase(test.NoDBTestCase):
                                    attribute_dict={'metrics': metrics})
         filt_cls = self.class_map['MetricsFilter']()
         self.assertFalse(filt_cls.host_passes(host, None))
+
+    @mock.patch('nova.db.geo_tag_get_by_node_name')
+    def test_geo_tags_filter_no_list_passes(self, geo_tag_mock):
+        geo_tag_mock.return_value = {'valid_invalid': 'Invalid'}
+
+        filt_cls = self.class_map['GeoTagsFilter']()
+        host = fakes.FakeHostState('host1', 'node1', {})
+        instance = fakes.FakeInstance(context=self.context,
+                                         params={'host': 'host2'})
+        instance_uuid = instance.uuid
+
+        filter_properties = {'context': self.context.elevated()}
+        self.assertFalse(filt_cls.host_passes(host, filter_properties))
+
+    @mock.patch('nova.db.geo_tag_get_by_node_name')
+    def test_geo_tags_filter_valid_passes(self, geo_tag_mock):
+        geo_tag_mock.return_value = {'valid_invalid': 'Valid'}
+
+        filt_cls = self.class_map['GeoTagsFilter']()
+        host = fakes.FakeHostState('host1', 'node1', {})
+        instance = fakes.FakeInstance(context=self.context,
+                                         params={'host': 'host2'})
+        instance_uuid = instance.uuid
+
+        filter_properties = {'context': self.context.elevated()}
+        self.assertTrue(filt_cls.host_passes(host, filter_properties))
