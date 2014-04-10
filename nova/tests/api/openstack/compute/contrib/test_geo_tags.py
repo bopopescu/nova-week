@@ -106,7 +106,7 @@ class GeotagsTest(test.NoDBTestCase):
     def test_geo_tags_create_fails_invalid_host(self, host_exists_mock):
         host = 'xxxserver3'
         host_exists_mock.side_effect = exception.ComputeHostNotFound(host=host)
-        body = {'geo_tag': {'compute_name': host,
+        body = {'geo_tag': {'compute_name': 'xxxserver3',
                             'valid_invalid': 'Valid',
                             'plt_longitude': '33',
                             'plt_latitude': '44'}}
@@ -124,8 +124,7 @@ class GeotagsTest(test.NoDBTestCase):
         geo_tag_get_mock.return_value = obj
         geo_tag_update_mock.return_value = obj
 
-        body = {'geo_tag': {'compute_name': 'server4',
-                            'valid_invalid': 'Valid',
+        body = {'geo_tag': {'valid_invalid': 'Valid',
                             'plt_longitude': '33',
                             'plt_latitude': '44'}}
 
@@ -135,7 +134,6 @@ class GeotagsTest(test.NoDBTestCase):
         expected = dict(body['geo_tag'])
         #(licostan): BIG NOTE, normalize server-name to compute_name
         #if we go por
-        expected.pop('compute_name')
         geo_tag_update_mock.assert_called_once_with(
                                         req.environ['nova.context'],
                                         obj['id'], expected)
