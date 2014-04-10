@@ -15,7 +15,7 @@
 
 from oslo.config import cfg
 
-from nova import db
+from nova.objects import geo_tags as geo_tags_obj
 from nova.openstack.common import log as logging
 from nova.scheduler import filters
 
@@ -37,9 +37,10 @@ class GeoTagsFilter(filters.BaseHostFilter):
         geo_tags = scheduler_hints.get('geo_tags', None)
 
         #filters = {'host': host_state.host, 'valid_invalid': 'Valid'}
-        #(licostan): Should we use objects? don't know... 
+        #(licostan): Should we use objects? don't know...
         #anyways this call should not happen in production
-        geo_tag = db.geo_tag_get_by_node_name(context, host_state.host)
+        geo_tag = geo_tags_obj.GeoTag.get_by_node_name(context,
+                                                       host_state.host)
         if not geo_tag:
             LOG.info('NO GEO TAG FOUND FOR %s' % host_state.host)
             return True
@@ -50,5 +51,4 @@ class GeoTagsFilter(filters.BaseHostFilter):
             return True
 
         LOG.info('GEO TAG INVALID FOR  %s' % host_state.host)
-        #always true for now.
         return False
