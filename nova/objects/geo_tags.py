@@ -43,7 +43,8 @@ class GeoTag(base.NovaPersistentObject, base.NovaObject):
         'plt_latitude': fields.StringField(nullable=True),
         'plt_longitude': fields.StringField(nullable=True),
         'rfid': fields.StringField(nullable=True),
-        'rfid_signature': fields.StringField(nullable=True)
+        'rfid_signature': fields.StringField(nullable=True),
+        'loc_or_error_msg': fields.StringField(nullable=True)
     }
 
     def __init__(self, *args, **kwargs):

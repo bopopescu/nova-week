@@ -72,7 +72,6 @@ class AgentController(object):
         agents = []
         if 'hypervisor' in req.GET:
             hypervisor = req.GET['hypervisor']
-
         for agent_build in db.agent_build_get_all(context, hypervisor):
             agents.append({'hypervisor': agent_build.hypervisor,
                            'os': agent_build.os,

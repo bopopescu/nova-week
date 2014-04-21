@@ -45,7 +45,6 @@ class Service(base.NovaPersistentObject, base.NovaObject):
         'availability_zone': fields.StringField(nullable=True),
         'compute_node': fields.ObjectField('ComputeNode'),
         'geo_tag': fields.ObjectField('GeoTag', nullable=True),
-        
         }
 
     @staticmethod
@@ -60,13 +59,14 @@ class Service(base.NovaPersistentObject, base.NovaObject):
         service.compute_node = compute_node.ComputeNode._from_db_object(
             context, compute_node.ComputeNode(), db_compute)
 
-    #(licostan) must be removed after poc, maybe place this into computenode hypervisors
-    #when migrated to objects
+    #(licostan) must be removed after poc, maybe place this into computenode
+    #hypervisors when migrated to objects
     @staticmethod
     def _do_geo_tag(context, service, db_service):
         #if it's a compute-node only
         if db_service['topic'] == six.text_type('compute'):
-            geo_tag = geo_tags.GeoTag.get_by_node_name(context, db_service['host'])
+            geo_tag = geo_tags.GeoTag.get_by_node_name(context,
+                                                       db_service['host'])
             if geo_tag:
                 service.geo_tag = geo_tag
         else:
@@ -75,7 +75,6 @@ class Service(base.NovaPersistentObject, base.NovaObject):
     @staticmethod
     def _from_db_object(context, service, db_service):
         allow_missing = ('availability_zone',)
-        
         for key in service.fields:
             if key in allow_missing and key not in db_service:
                 continue
@@ -103,10 +102,12 @@ class Service(base.NovaPersistentObject, base.NovaObject):
                 action='obj_load_attr',
                 reason='attribute %s not lazy-loadable' % attrname)
         if attrname == 'geo_tag':
-            self.geo_tag = geo_tags.GeoTag.get_by_node_name(self._context, self.host)
+            self.geo_tag = geo_tags.GeoTag.get_by_node_name(self._context,
+                                                            self.host)
         else:
             self.compute_node = compute_node.ComputeNode.get_by_service_id(
                 self._context, self.id)
+
     @base.remotable_classmethod
     def get_by_id(cls, context, service_id):
         db_service = db.service_get(context, service_id)

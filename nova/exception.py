@@ -1543,5 +1543,6 @@ class NoBlockMigrationForConfigDriveInLibVirt(NovaException):
     msg_fmt = _("Block migration of instances with config drives is not "
                 "supported in libvirt.")
 
+
 class GeoTagExists(NovaException):
     msg_fmt = _("GeoTag for  %(name)s already exists.")

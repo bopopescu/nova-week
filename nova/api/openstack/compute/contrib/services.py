@@ -99,7 +99,7 @@ class ServiceController(object):
         geo_tags = self.host_api.geo_tags_get_all(context, None)
         for x in services:
             if x['binary'] == 'nova-compute':
-                tags = [gt for gt in geo_tags
+                tags = [gt for gt in geo_tags.objects
                         if gt['server_name'] == x['host']]
                 if len(tags):
                     x.geo_tag = tags[0]

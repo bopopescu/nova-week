@@ -64,7 +64,7 @@ class SameHostFilter(AffinityFilter):
     def host_passes(self, host_state, filter_properties):
         context = filter_properties['context']
         scheduler_hints = filter_properties.get('scheduler_hints') or {}
-
+        LOG.debug('Samehost Filter running')
         affinity_uuids = scheduler_hints.get('same_host', [])
         if isinstance(affinity_uuids, six.string_types):
             affinity_uuids = [affinity_uuids]

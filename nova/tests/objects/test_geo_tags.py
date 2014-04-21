@@ -20,8 +20,6 @@ from nova.tests.objects import test_objects
 
 NOW = timeutils.utcnow().replace(microsecond=0)
 
-#(licostan): TODO - add GeoTagsList test
-
 
 def fake_db_geo_tag(**updates):
     db_instance = {

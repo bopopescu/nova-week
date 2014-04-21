@@ -1396,24 +1396,20 @@ class PciDevice(BASE, NovaBase):
                             'PciDevice.instance_uuid == Instance.uuid,'
                             'PciDevice.deleted == 0)')
 
+
 class ComputeNodeGeoTag(BASE, NovaBase):
-    """Represents geotag information"""
+    """Represents geotag information."""
     __tablename__ = 'compute_nodes_geotag'
     __table_args__ = (
-           Index('compute_name_gt_tag_valid_idx', 'server_name', 'valid_invalid'),
-        
+        Index('compute_name_gt_tag_valid_idx', 'server_name', 'valid_invalid'),
     )
-    
     id = Column(Integer, primary_key=True)
-    
-   
     ip_address = Column(types.IPAddress())
     mac_address = Column(String(17))
     parent_mac = Column(String(17))
     #should be covered by upated_at when using
     #the api to change this values
     time_data_rec = Column(String(28))
-    
     rfid = Column(String(24))
     rfid_signature = Column(String(10))
     platform_guid = Column(String(32))
@@ -1435,13 +1431,10 @@ class ComputeNodeGeoTag(BASE, NovaBase):
     geo_loc_server = Column(String(5))
     node_manager = Column(String(5))
     alerts = Column(Integer)
-    
 
     server_name = Column(String(255), nullable=False)
     #can exists or not...
     #node_data = relationship(ComputeNode, backref="geo_tags",
     #                        foreign_keys=server_name,
     #                        primaryjoin='and_('
-    #                            'ComputeNode.hypervisor_hostname == server_name ')
-                                   
-
+    #                       'ComputeNode.hypervisor_hostname == server_name ')

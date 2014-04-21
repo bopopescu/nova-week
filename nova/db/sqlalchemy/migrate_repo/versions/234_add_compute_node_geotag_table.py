@@ -16,16 +16,12 @@
 
 from sqlalchemy import Column
 from sqlalchemy import DateTime
-from sqlalchemy import ForeignKey
 from sqlalchemy import Index
 from sqlalchemy import Integer
 from sqlalchemy import MetaData
 from sqlalchemy import String
 from sqlalchemy import Table
-from sqlalchemy import Text
 from sqlalchemy import UniqueConstraint
-
-from nova.openstack.common import timeutils
 
 
 def upgrade(engine):
@@ -38,10 +34,7 @@ def upgrade(engine):
         Column('deleted_at', DateTime(timezone=False)),
         Column('deleted', Integer, default=0),
         Column('id', Integer, primary_key=True),
-        
-        
         Column('server_name', String(255), nullable=False),
-        
         Column('ip_address', String(39)),
         Column('mac_address', String(17)),
         Column('parent_mac', String(17)),
@@ -64,9 +57,7 @@ def upgrade(engine):
         Column('platform_guid', String(32)),
         Column('geo_loc_svr_guid', String(32)),
         Column('rfid_reader_guid', String(32)),
-
         Column('alerts', Integer),
-        
         Index('compute_name_gt_tag_valid_idx',
               'server_name', 'valid_invalid'),
         UniqueConstraint('server_name', name=geo_tag_uc_name),

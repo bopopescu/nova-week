@@ -77,7 +77,7 @@ class GeotagsTest(test.NoDBTestCase):
         first_gt = res_dict['geo_tags'][0]
         self.assertTrue(first_gt.server_name, self.db_list[0]['server_name'])
         second_gt = res_dict['geo_tags'][1]
-        self.assertEquals(second_gt.server_name,
+        self.assertEqual(second_gt.server_name,
                           self.db_list[1]['server_name'])
         db_mock.assert_called_once_with(req.environ['nova.context'], {})
 
@@ -94,7 +94,7 @@ class GeotagsTest(test.NoDBTestCase):
 
         req = FakeRequest()
         res_dict = self.controller.create(req, body)
-        self.assertEquals(res_dict['geo_tag'].server_name, 'server3')
+        self.assertEqual(res_dict['geo_tag'].server_name, 'server3')
         expected = dict(body['geo_tag'])
         #(licostan): BIG NOTE, normalize server-name to compute_name
         #if we go por
@@ -130,7 +130,7 @@ class GeotagsTest(test.NoDBTestCase):
 
         req = FakeRequest()
         res_dict = self.controller.update(req, 'server4', body)
-        self.assertEquals(res_dict['geo_tag'].server_name, 'server4')
+        self.assertEqual(res_dict['geo_tag'].server_name, 'server4')
         expected = dict(body['geo_tag'])
         #(licostan): BIG NOTE, normalize server-name to compute_name
         #if we go por
@@ -141,7 +141,7 @@ class GeotagsTest(test.NoDBTestCase):
     @mock.patch('nova.db.geo_tag_destroy')
     @mock.patch('nova.db.geo_tag_get_by_id_or_node_name')
     def test_geo_tags_delete(self, geo_tag_get_mock, geo_tag_destroy_mock):
-        #(licostan): Why the get? just destroy?... TODO
+        #TODO(licostan): Why the get? just destroy?... TODO
         obj = fake_geotag_db(4, 'server4', 'Inactive', 11, 11)
         geo_tag_get_mock.return_value = obj
         req = FakeRequest()

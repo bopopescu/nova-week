@@ -65,11 +65,12 @@ class GeoTagsController(object):
         longitude = geo_tag.get('plt_longitude')
         latitude = geo_tag.get('plt_latitude')
         state = geo_tag.get('valid_invalid')
-
+        location = geo_tag.get('location')
         try:
             gt = self.api.geo_tags_create(context, compute_name, state,
                                           longitude=longitude,
-                                          latitude=latitude)
+                                          latitude=latitude,
+                                          location=location)
         except exception.GeoTagExists as e:
             LOG.info(e)
             raise exc.HTTPConflict()
@@ -97,7 +98,8 @@ class GeoTagsController(object):
         """
         context = _get_context(req)
         authorize(context)
-        valid_keys = ['plt_longitude', 'plt_latitude', 'valid_invalid']
+        valid_keys = ['plt_longitude', 'plt_latitude', 'valid_invalid',
+                      'location']
 
         if len(body) != 1:
             raise exc.HTTPBadRequest()
@@ -113,13 +115,15 @@ class GeoTagsController(object):
         longitude = update_values.get('plt_longitude')
         latitude = update_values.get('plt_latitude')
         state = update_values.get('valid_invalid')
+        location = update_values.get('location')
          #(licostan): remove compute_name and pass **update_values
          #to remove args
         try:
             geo_tag = self.api.geo_tags_update(context, id,
                                            valid_invalid=state,
                                            longitude=longitude,
-                                           latitude=latitude)
+                                           latitude=latitude,
+                                           location=location)
         except exception.NotFound as e:
             LOG.info(_('Cannot update geotag'))
             raise exc.HTTPNotFound(explanation=e.format_message())
