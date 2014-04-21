@@ -1431,8 +1431,8 @@ class ComputeNodeGeoTag(BASE, NovaBase):
     geo_loc_server = Column(String(5))
     node_manager = Column(String(5))
     alerts = Column(Integer)
-
-    server_name = Column(String(255), nullable=False)
+    power_state = Column(String(15), nullable=True)
+    server_name = Column(String(255), nullable=True)
     #can exists or not...
     #node_data = relationship(ComputeNode, backref="geo_tags",
     #                        foreign_keys=server_name,
