@@ -3309,7 +3309,11 @@ class HostAPI(base.Base):
         geo_tag.destroy()
 
     def geo_tags_get_by_id_or_name(self, context, geo_tag_id):
-        return geo_tags_obj.GeoTag.get_by_id_or_node_name(context, geo_tag_id)
+        geo_tag = geo_tags_obj.GeoTag.get_by_id_or_node_name(context,
+                                                             geo_tag_id)
+        if not geo_tag:
+            raise exception.NotFound()
+        return geo_tag
 
 
 class InstanceActionAPI(base.Base):
