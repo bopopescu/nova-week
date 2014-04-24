@@ -1858,10 +1858,12 @@ class HostFiltersTestCase(test.NoDBTestCase):
         filter_properties = {'context': self.context.elevated()}
         self.assertTrue(filt_cls.host_passes(host, filter_properties))
 
-    @mock.patch('nova.objects.geo_tags.GeoTag.get_by_node_name')
-    def test_geo_tags_filter_valid_invalid_rack(self, geo_tag_mock):
+    #@mock.patch('nova.objects.geo_tags.GeoTag.get_by_node_name')
+    def _test_geo_tags_filter(self, gtag, wanted,
+                              host_passes=False):
+        geo_tag_mock = mock.Mock('nova.objects.geo_tags.GeoTag.get_by_node_name')
         geo_tag_mock.return_value = {'valid_invalid': 'Valid',
-                                     'loc_or_error_msg': '1-3-2'}
+                                     'loc_or_error_msg': gtag}
 
         filt_cls = self.class_map['GeoTagsFilter']()
         host = fakes.FakeHostState('host1', 'node1', {})
@@ -1869,25 +1871,24 @@ class HostFiltersTestCase(test.NoDBTestCase):
                                          params={'host': 'host2'})
         instance_uuid = instance.uuid
 
+        wanted_tags = '{"rack_location": "%s"}' % wanted
         filter_properties = {'context': self.context.elevated(),
                              'scheduler_hints': {
-                                'geo_tags': '{"rack_location": "1-3-4"}'}}
+                                  'geo_tags': wanted_tags}}
+        if host_passes:
+            self.assertTrue(filt_cls.host_passes(host, filter_properties))
+        else:
+            self.assertFalse(filt_cls.host_passes(host, filter_properties))
 
-        self.assertFalse(filt_cls.host_passes(host, filter_properties))
+    def test_geo_tags_filter_valid_rack(self):
+        ok_locations = ['1-2-3-4-5', '1-2-3-4', '1-2-3-4-',
+                        '1-2-3', '1-2', '1-', '1']
+        for x in ok_locations:
+            self._test_geo_tags_filter('1-2-3-4-5', x, True)
 
-    @mock.patch('nova.objects.geo_tags.GeoTag.get_by_node_name')
-    def test_geo_tags_filter_valid_rack(self, geo_tag_mock):
-        geo_tag_mock.return_value = {'valid_invalid': 'Valid',
-                                     'loc_or_error_msg': '1-3-4'}
+    def test_geo_tags_filter_invalid_rack(self):
+        ok_locations = ['1-2-3-4-3', '1-2-3-2', '1-2-3-1-',
+                        '1-5-3', '3-2', '2-', '2']
+        for x in ok_locations:
+            self._test_geo_tags_filter('1-2-3-4-5', x, True)
 
-        filt_cls = self.class_map['GeoTagsFilter']()
-        host = fakes.FakeHostState('host1', 'node1', {})
-        instance = fakes.FakeInstance(context=self.context,
-                                         params={'host': 'host2'})
-        instance_uuid = instance.uuid
-
-        filter_properties = {'context': self.context.elevated(),
-                             'scheduler_hints': {
-                                'geo_tags': '{"rack_location": "1-3-4"}'}}
-
-        self.assertTrue(filt_cls.host_passes(host, filter_properties))

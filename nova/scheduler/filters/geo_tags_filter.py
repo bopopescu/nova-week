@@ -29,8 +29,13 @@ class GeoTagsFilter(filters.BaseHostFilter):
     """Filter on geo tags filters if available."""
 
     def _is_valid_rack_loc(self, host_rack, wanted_rack):
-        rack_aff = zip(wanted_rack.split('-'), host_rack.split('-'))
+        wanted = wanted_rack.split('-')
+        host = host_rack.split('-')
+        if not wanted[-1]:
+            wanted.pop()
+        rack_aff = zip(wanted, host)
         for x, v in rack_aff:
+            #may be empty due to to split
             if x != v:
                 return False
         return True
