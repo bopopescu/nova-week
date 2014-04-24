@@ -33,6 +33,7 @@ import sys
 import time
 import traceback
 import uuid
+import json
 
 import eventlet.event
 from eventlet import greenthread
@@ -51,6 +52,7 @@ from nova.compute import rpcapi as compute_rpcapi
 from nova.compute import task_states
 from nova.compute import utils as compute_utils
 from nova.compute import vm_states
+
 from nova import conductor
 from nova import consoleauth
 import nova.context
@@ -68,6 +70,7 @@ from nova.objects import external_event as external_event_obj
 from nova.objects import flavor as flavor_obj
 from nova.objects import instance as instance_obj
 from nova.objects import instance_group as instance_group_obj
+from nova.objects import geo_tags as geo_tags_obj
 from nova.objects import migration as migration_obj
 from nova.objects import quotas as quotas_obj
 from nova.openstack.common import excutils
@@ -1709,6 +1712,24 @@ class ComputeManager(manager.Manager):
         """Spawn an instance with error logging and update its power state."""
         instance.vm_state = vm_states.BUILDING
         instance.task_state = task_states.SPAWNING
+    
+        #TODO(licostan): THIS CALL MUSt NO BE HERE, but contains the info into the 
+        #compute node itself.... Its to aggregate on the notification
+        # This should be also in system_medata, but the notification is not receiving it
+        # for the POc we add it here
+        meta = {}
+        try:
+        
+            gtags = geo_tags_obj.GeoTag.get_by_id_or_node_name(context, instance.get('host'))
+            if gtags:
+                meta['geo_tags_long'] = gtags.plt_longitude
+                meta['geo_tags_lat'] = gtags.plt_latitude
+                meta['geo_tags_location'] = gtags.loc_or_error_msg
+            
+        except Exception as e :
+            LOG.error('Cannot get geotags for system_metadata '  + str(e))
+        #this info belongs to system_metadata but cannot retrieve right now
+        instance.metadata.update(meta)
         instance.save(expected_task_state=task_states.BLOCK_DEVICE_MAPPING)
 
         try:
@@ -1726,7 +1747,6 @@ class ComputeManager(manager.Manager):
         instance.vm_state = vm_states.ACTIVE
         instance.task_state = None
         instance.launched_at = timeutils.utcnow()
-
         def _set_access_ip_values():
             """Add access ip values for a given instance.
 
@@ -1895,6 +1915,7 @@ class ComputeManager(manager.Manager):
             block_device_mapping, node, limits):
 
         image_name = image.get('name')
+        
         self._notify_about_instance_usage(context, instance, 'create.start',
                 extra_usage_info={'image_name': image_name})
         try:
@@ -1905,6 +1926,7 @@ class ComputeManager(manager.Manager):
                         block_device_mapping) as resources:
                     instance.vm_state = vm_states.BUILDING
                     instance.task_state = task_states.SPAWNING
+                    
                     instance.save(expected_task_state=
                             task_states.BLOCK_DEVICE_MAPPING)
                     block_device_info = resources['block_device_info']
@@ -1957,6 +1979,8 @@ class ComputeManager(manager.Manager):
         instance.vm_state = vm_states.ACTIVE
         instance.task_state = None
         instance.launched_at = timeutils.utcnow()
+
+
         instance.save(expected_task_state=task_states.SPAWNING)
 
     @contextlib.contextmanager
